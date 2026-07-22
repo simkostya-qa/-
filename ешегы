@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Викторина по Посланию к Титу (30 вопросов, рандом)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(145deg, #0b1a2e, #1a2f44);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .quiz-container {
+            max-width: 820px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            border-radius: 40px;
+            padding: 30px 25px 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 215, 0, 0.15);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+        h1 {
+            font-size: 2.4rem;
+            font-weight: 700;
+            color: #f5e7b0;
+            text-align: center;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+            margin-bottom: 6px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #bfd7f5;
+            font-size: 1rem;
+            border-bottom: 1px solid rgba(255,215,0,0.2);
+            padding-bottom: 18px;
+            margin-bottom: 25px;
+            font-style: italic;
+        }
+        .question-area {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 28px;
+            padding: 22px 24px;
+            border-left: 5px solid #f5c542;
+            margin-bottom: 18px;
+        }
+        .question-text {
+            color: #ffffff;
+            font-size: 1.35rem;
+            font-weight: 500;
+            line-height: 1.5;
+        }
+        .question-number {
+            display: inline-block;
+            background: #f5c542;
+            color: #0b1a2e;
+            font-weight: 700;
+            padding: 2px 14px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            margin-bottom: 12px;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 20px 0 25px;
+        }
+        .option {
+            background: rgba(255, 255, 255, 0.06);
+            border: 2px solid rgba(255, 255, 255, 0.12);
+            border-radius: 18px;
+            padding: 14px 22px;
+            color: #eef3fc;
+            font-size: 1.05rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .option:hover:not(.disabled) {
+            background: rgba(245, 197, 66, 0.15);
+            border-color: #f5c542;
+            transform: scale(1.01);
+        }
+        .option input[type="radio"] { display: none; }
+        .option .letter {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.08);
+            font-weight: 700;
+            color: #f5c542;
+            flex-shrink: 0;
+        }
+        .option.selected {
+            border-color: #f5c542;
+            background: rgba(245, 197, 66, 0.2);
+        }
+        .option.correct {
+            border-color: #4caf50;
+            background: rgba(76, 175, 80, 0.25);
+        }
+        .option.correct .letter {
+            background: #4caf50;
+            color: #fff;
+        }
+        .option.wrong {
+            border-color: #e74c3c;
+            background: rgba(231, 76, 60, 0.25);
+        }
+        .option.wrong .letter {
+            background: #e74c3c;
+            color: #fff;
+        }
+        .option.disabled {
+            cursor: default;
+            opacity: 0.8;
+        }
+        .feedback {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 20px;
+            padding: 16px 22px;
+            margin: 10px 0 20px;
+            color: #d4e2f0;
+            border-left: 4px solid #f5c542;
+            font-size: 0.98rem;
+            line-height: 1.5;
+            display: none;
+        }
+        .feedback.show { display: block; }
+        .feedback strong { color: #f5c542; }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
+            margin-top: 10px;
+        }
+        .btn {
+            background: #f5c542;
+            color: #0b1a2e;
+            border: none;
+            padding: 12px 34px;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 6px 0 #b38a2a;
+            letter-spacing: 0.5px;
+        }
+        .btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #b38a2a;
+        }
+        .btn:disabled {
+            opacity: 0.4;
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #b38a2a;
+            pointer-events: none;
+        }
+        .btn-secondary {
+            background: transparent;
+            color: #f5c542;
+            border: 2px solid #f5c542;
+            box-shadow: none;
+            padding: 10px 28px;
+        }
+        .btn-secondary:active { transform: scale(0.97); }
+        .progress-info {
+            color: #bfd7f5;
+            font-size: 0.95rem;
+            background: rgba(0,0,0,0.3);
+            padding: 8px 20px;
+            border-radius: 40px;
+        }
+        .result-box {
+            text-align: center;
+            padding: 30px 20px;
+        }
+        .result-box .score {
+            font-size: 4rem;
+            font-weight: 800;
+            color: #f5c542;
+            text-shadow: 0 4px 20px rgba(245,197,66,0.3);
+        }
+        .result-box .message {
+            color: #eef3fc;
+            font-size: 1.3rem;
+            margin-top: 10px;
+        }
+        .result-box .detail {
+            color: #bfd7f5;
+            margin-top: 18px;
+            font-size: 1rem;
+            background: rgba(0,0,0,0.2);
+            padding: 20px;
+            border-radius: 30px;
+            line-height: 1.7;
+            text-align: left;
+        }
+        .result-box .btn { margin-top: 25px; }
+        .hidden { display: none !important; }
+        @media (max-width: 600px) {
+            .quiz-container { padding: 20px 15px; }
+            h1 { font-size: 1.8rem; }
+            .question-text { font-size: 1.1rem; }
+            .option { font-size: 0.95rem; padding: 12px 16px; }
+            .controls { flex-direction: column; align-items: stretch; }
+            .btn { width: 100%; justify-content: center; }
+        }
+        .fade-in {
+            animation: fadeIn 0.4s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+<div class="quiz-container" id="app">
+    <h1>📖 Послание к Титу</h1>
+    <div class="subtitle">Викторина для молодёжи • перевод НРП • 30 вопросов (рандом)</div>
+
+    <div id="quizBlock">
+        <div class="question-area fade-in">
+            <div class="question-number" id="qNum">Вопрос 1 из 30</div>
+            <div class="question-text" id="qText">Загрузка...</div>
+        </div>
+        <div class="options" id="optionsContainer"></div>
+        <div class="feedback" id="feedback"></div>
+        <div class="controls">
+            <span class="progress-info" id="progressText">0 / 30</span>
+            <div>
+                <button class="btn btn-secondary" id="resetBtn" style="margin-right:12px;">↻ Начать сначала</button>
+                <button class="btn" id="nextBtn">Следующий →</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="resultBlock" class="hidden result-box">
+        <div class="score" id="finalScore">0</div>
+        <div class="message" id="resultMessage">Отлично!</div>
+        <div class="detail" id="resultDetail"></div>
+        <button class="btn" id="restartFromResultBtn">↻ Пройти снова</button>
+    </div>
+</div>
+
+<script>
+    // ========== 30 ВОПРОСОВ (НРП) ==========
+    const questions = [
+        { question: 'Как Павел называет себя в начале Послания к Титу?', options: ['Раб Божий и апостол Иисуса Христа', 'Узник Христов', 'Первосвященник', 'Пророк'], correct: 0, explanation: 'Тит 1:1 – «Павел, раб Божий, апостол Иисуса Христа».' },
+        { question: 'Кому адресовано Послание?', options: ['Тимофею', 'Титу, истинному сыну по общей вере', 'Гаию', 'Филимону'], correct: 1, explanation: 'Тит 1:4 – «Титу, истинному сыну по общей вере».' },
+        { question: 'С какой целью Павел оставил Тита на Крите?', options: ['Чтобы проповедовал в синагогах', 'Чтобы довершил недоделанное и поставил пресвитеров', 'Чтобы собрал пожертвования', 'Чтобы написал Евангелие'], correct: 1, explanation: 'Тит 1:5 – «чтобы ты довершил недоделанное и поставил пресвитеров».' },
+        { question: 'Какое требование к старейшине в отношении семьи?', options: ['Быть мужем одной жены и иметь верных детей', 'Быть бездетным', 'Иметь много детей', 'Быть женатым на дочери первосвященника'], correct: 0, explanation: 'Тит 1:6 – «если кто непорочен, муж одной жены, детей имеет верных».' },
+        { question: 'Какое качество запрещено для старейшины?', options: ['Быть гостеприимным', 'Быть пьяницей', 'Быть любящим добро', 'Быть справедливым'], correct: 1, explanation: 'Тит 1:7 – «не пьяница, не драчун, не корыстолюбив».' },
+        { question: 'Что старейшина должен держаться согласно учению?', options: ['Истинного слова', 'Древних преданий', 'Законов Моисея', 'Философских учений'], correct: 0, explanation: 'Тит 1:9 – «держащийся истинного слова, согласно учению».' },
+        { question: 'Кого Павел называет «пустословами и обманщиками»?', options: ['Эллинистов', 'Особенно из обрезанных', 'Римских чиновников', 'Философов'], correct: 1, explanation: 'Тит 1:10 – «особенно из обрезанных».' },
+        { question: 'Как Павел цитирует критского пророка о критянах?', options: ['Они всегда лжецы, злые звери, утробы ленивые', 'Они мудры и благочестивы', 'Они ревнители закона', 'Они гостеприимны и добры'], correct: 0, explanation: 'Тит 1:12 – «критяне всегда лжецы, злые звери, утробы ленивые».' },
+        { question: 'Зачем нужно обличать лжеучителей строго?', options: ['Чтобы они были здравы в вере', 'Чтобы они ушли из церкви', 'Чтобы их наказали власти', 'Чтобы они покаялись'], correct: 0, explanation: 'Тит 1:13 – «обличай их строго, чтобы они были здравы в вере».' },
+        { question: 'Что говорится о чистых и оскверненных?', options: ['Для чистых всё чисто, для неверных ничего не чисто', 'Чистые не едят нечистого', 'Оскверненные могут очиститься', 'Чистота зависит от еды'], correct: 0, explanation: 'Тит 1:15 – «для чистых всё чисто».' },
+        { question: 'Чем лжеучители доказывают, что не знают Бога?', options: ['Делами отрекаются', 'Словами исповедуют, но делами не подтверждают', 'Не посещают храм', 'Не соблюдают субботу'], correct: 0, explanation: 'Тит 1:16 – «говорят, что знают Бога, а делами отрекаются».' },
+        { question: 'Что должно соответствовать здравому учению в поведении старцев?', options: ['Быть трезвыми, степенными, благоразумными', 'Быть богатыми и влиятельными', 'Иметь высокое положение', 'Много путешествовать'], correct: 0, explanation: 'Тит 2:2 – «чтобы старцы были трезвы, степенны, благоразумны».' },
+        { question: 'Какое наставление дано старым женщинам?', options: ['Не клеветницы, не пьяницы, учительницы добра', 'Быть домохозяйками', 'Помогать бедным', 'Учить детей Закону'], correct: 0, explanation: 'Тит 2:3 – «не клеветницы, не порабощены пьянству, учительницы добра».' },
+        { question: 'Чему старые женщины должны учить молодых?', options: ['Любить мужей и детей', 'Искусству врачевания', 'Философии', 'Торговле'], correct: 0, explanation: 'Тит 2:4 – «чтобы вразумляли молодых любить мужей, любить детей».' },
+        { question: 'Что Павел велит юношам?', options: ['Быть целомудренными', 'Быть воинственными', 'Изучать Писание', 'Путешествовать'], correct: 0, explanation: 'Тит 2:6 – «юношей увещевай быть целомудренными».' },
+        { question: 'Что Тит должен показывать в своем учении?', options: ['Образец добрых дел', 'Знание языков', 'Красноречие', 'Чудеса'], correct: 0, explanation: 'Тит 2:7 – «во всем показывай в себе образец добрых дел».' },
+        { question: 'Как должны вести себя рабы по отношению к господам?', options: ['Повиноваться и угождать', 'Бунтовать', 'Убегать', 'Требовать свободы'], correct: 0, explanation: 'Тит 2:9 – «рабов увещевай повиноваться своим господам, угождать».' },
+        { question: 'Что делает благодать Божия согласно Титу 2?', options: ['Научает отвергнуть нечестие и жить праведно', 'Даёт богатство', 'Исцеляет болезни', 'Даёт власть'], correct: 0, explanation: 'Тит 2:11–12 – «научает нас, чтобы мы, отвергнув нечестие и мирские похоти, целомудренно жили».' },
+        { question: 'Чего мы ожидаем как верующие?', options: ['Блаженного упования и явления славы Иисуса', 'Земного царства', 'Мира во всём мире', 'Богатства и славы'], correct: 0, explanation: 'Тит 2:13 – «ожидая блаженного упования и явления славы великого Бога и Спасителя».' },
+        { question: 'Для чего Христос дал Себя за нас?', options: ['Чтобы избавить от беззакония и очистить народ', 'Чтобы дать здоровье', 'Чтобы сделать богатыми', 'Чтобы дать долголетие'], correct: 0, explanation: 'Тит 2:14 – «чтобы избавить нас от всякого беззакония и очистить Себе народ особенный».' },
+        { question: 'Какую власть имеет Тит в проповеди?', options: ['Увещевать и обличать со всякой властью', 'Только учить, не обличать', 'Только молиться', 'Только крестить'], correct: 0, explanation: 'Тит 2:15 – «увещевай и обличай со всякой властью».' },
+        { question: 'К чему Павел призывает в отношении властей?', options: ['Повиноваться и быть готовыми на доброе дело', 'Противостоять им', 'Игнорировать их', 'Молиться о их падении'], correct: 0, explanation: 'Тит 3:1 – «повиноваться и покоряться начальству и властям, быть готовыми на всякое доброе дело».' },
+        { question: 'Как мы должны относиться к другим людям?', options: ['Не злословить, быть мирными, кроткими', 'Судить их', 'Избегать их', 'Спорить с ними'], correct: 0, explanation: 'Тит 3:2 – «никого не злословить, быть мирными, уступчивыми, показывать всякую кротость».' },
+        { question: 'Какими мы были до спасения?', options: ['Неразумными, непокорными, рабами похотей', 'Мудрыми и праведными', 'Богатыми и знатными', 'Здоровыми и сильными'], correct: 0, explanation: 'Тит 3:3 – «и мы были некогда несмысленны, непокорны, заблудшие, рабы похотей».' },
+        { question: 'Что явилось, когда пришла благодать?', options: ['Человеколюбие Спасителя', 'Гнев Божий', 'Закон Моисеев', 'Пророчества'], correct: 0, explanation: 'Тит 3:4 – «явилась благодать и человеколюбие Спасителя нашего».' },
+        { question: 'Как мы спасаемся?', options: ['По милости, через омовение возрождения и обновления Духом', 'По делам закона', 'Через жертвоприношения', 'Через пост и молитву'], correct: 0, explanation: 'Тит 3:5 – «спас нас не по делам праведности, а по Своей милости, банею возрождения и обновления Святым Духом».' },
+        { question: 'Кого Бог излил на нас обильно?', options: ['Святого Духа', 'Ангелов', 'Пророков', 'Апостолов'], correct: 0, explanation: 'Тит 3:6 – «Которого излил на нас обильно через Иисуса Христа».' },
+        { question: 'Чтобы мы стали наследниками чего?', options: ['Вечной жизни', 'Земли обетованной', 'Царства Израильского', 'Богатства мира'], correct: 0, explanation: 'Тит 3:7 – «чтобы мы, оправдавшись Его благодатью, стали наследниками вечной жизни».' },
+        { question: 'Что Тит должен утверждать, чтобы верующие были прилежны к добрым делам?', options: ['Что это слово верно', 'Что закон обязателен', 'Что нужно ждать пришествия', 'Что нужно собирать сокровища'], correct: 0, explanation: 'Тит 3:8 – «слово это верно; утверждай это, дабы уверовавшие старались быть прилежными к добрым делам».' },
+        { question: 'Как поступать с еретиком?', options: ['После первого и второго вразумления отвращаться', 'Прощать бесконечно', 'Игнорировать', 'Отлучать сразу'], correct: 0, explanation: 'Тит 3:10 – «еретика, после первого и второго вразумления, отвращайся».' }
+    ];
+
+    // ========== ЛОГИКА ==========
+    let currentIndex = 0;
+    let userAnswers = new Array(questions.length).fill(null);
+    let shuffledQuestions = [];
+
+    function shuffleArray(arr) {
+        const a = arr.slice();
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+    }
+
+    function renderQuestion(index) {
+        const q = questions[index];
+        if (!shuffledQuestions[index]) {
+            const shuffledOpts = shuffleArray(q.options);
+            const correctText = q.options[q.correct];
+            const newCorrect = shuffledOpts.indexOf(correctText);
+            shuffledQuestions[index] = { options: shuffledOpts, correctIndex: newCorrect };
+        }
+        const shuffled = shuffledQuestions[index];
+
+        document.getElementById('qNum').textContent = `Вопрос ${index+1} из ${questions.length}`;
+        document.getElementById('qText').textContent = q.question;
+
+        const letters = ['А', 'Б', 'В', 'Г'];
+        const selected = userAnswers[index];
+        let html = '';
+        shuffled.options.forEach((opt, i) => {
+            const isSelected = (selected === i);
+            const disabled = selected !== null ? 'disabled' : '';
+            const selectedClass = isSelected ? 'selected' : '';
+            html += `<div class="option ${disabled} ${selectedClass}" data-optindex="${i}">
+                <input type="radio" name="question" value="${i}" ${isSelected ? 'checked' : ''} ${selected !== null ? 'disabled' : ''}>
+                <span class="letter">${letters[i]}</span>
+                <span>${opt}</span>
+            </div>`;
+        });
+        document.getElementById('optionsContainer').innerHTML = html;
+
+        const feedback = document.getElementById('feedback');
+        if (selected !== null) {
+            const correctIdx = shuffled.correctIndex;
+            const allOpts = document.querySelectorAll('.option');
+            allOpts.forEach((el, i) => {
+                el.classList.add('disabled');
+                el.querySelector('input').disabled = true;
+                if (i === correctIdx) el.classList.add('correct');
+                if (i === selected && selected !== correctIdx) el.classList.add('wrong');
+            });
+            feedback.textContent = q.explanation;
+            feedback.className = 'feedback show';
+        } else {
+            feedback.className = 'feedback';
+            feedback.textContent = '';
+            document.querySelectorAll('.option').forEach(opt => {
+                opt.addEventListener('click', function() {
+                    if (userAnswers[currentIndex] !== null) return;
+                    const idx = parseInt(this.dataset.optindex);
+                    selectOption(currentIndex, idx);
+                });
+            });
+        }
+
+        const answered = userAnswers.filter(a => a !== null).length;
+        document.getElementById('progressText').textContent = `${answered} / ${questions.length}`;
+
+        const nextBtn = document.getElementById('nextBtn');
+        if (userAnswers[index] !== null) {
+            nextBtn.disabled = false;
+            nextBtn.textContent = index === questions.length - 1 ? '📊 Узнать результат' : 'Следующий →';
+        } else {
+            nextBtn.disabled = true;
+            nextBtn.textContent = index === questions.length - 1 ? '📊 Результат' : 'Следующий →';
+        }
+    }
+
+    function selectOption(qIndex, optIndex) {
+        if (userAnswers[qIndex] !== null) return;
+        userAnswers[qIndex] = optIndex;
+        renderQuestion(qIndex);
+    }
+
+    function goToNext() {
+        if (userAnswers[currentIndex] === null) return;
+        if (currentIndex === questions.length - 1) {
+            showResult();
+            return;
+        }
+        currentIndex++;
+        renderQuestion(currentIndex);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showResult() {
+        document.getElementById('quizBlock').classList.add('hidden');
+        document.getElementById('resultBlock').classList.remove('hidden');
+
+        let correctCount = 0;
+        const details = [];
+        questions.forEach((q, i) => {
+            const sh = shuffledQuestions[i];
+            if (!sh) return;
+            const userIdx = userAnswers[i];
+            const isCorrect = (userIdx === sh.correctIndex);
+            if (isCorrect) correctCount++;
+            details.push({
+                question: q.question,
+                user: userIdx !== null ? sh.options[userIdx] : 'Не отвечено',
+                correct: sh.options[sh.correctIndex],
+                isCorrect
+            });
+        });
+
+        document.getElementById('finalScore').textContent = `${correctCount} / ${questions.length}`;
+        let msg = '';
+        if (correctCount === questions.length) msg = '🌟 Изумительно! Ты знаешь послание назубок!';
+        else if (correctCount >= questions.length * 0.75) msg = '👍 Отлично! Глубокое знание.';
+        else if (correctCount >= questions.length * 0.5) msg = '📖 Хорошо, но стоит перечитать.';
+        else msg = '📚 Попробуй открыть Библию и освежить текст.';
+        document.getElementById('resultMessage').textContent = msg;
+
+        let detailHtml = '<strong>Разбор ответов:</strong><br><br>';
+        details.forEach((d, idx) => {
+            const icon = d.isCorrect ? '✅' : '❌';
+            detailHtml += `<div style="margin-bottom:12px; text-align:left; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:8px;">
+                <span style="color:#f5c542;">${idx+1}.</span> ${d.question}<br>
+                <span style="opacity:0.7;">Ваш ответ: ${d.user}</span><br>
+                <span style="color:${d.isCorrect ? '#4caf50' : '#e74c3c'};">${icon} Правильный: ${d.correct}</span>
+            </div>`;
+        });
+        document.getElementById('resultDetail').innerHTML = detailHtml;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function resetQuiz() {
+        userAnswers = new Array(questions.length).fill(null);
+        shuffledQuestions = [];
+        currentIndex = 0;
+        document.getElementById('quizBlock').classList.remove('hidden');
+        document.getElementById('resultBlock').classList.add('hidden');
+        renderQuestion(0);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    document.getElementById('nextBtn').addEventListener('click', goToNext);
+    document.getElementById('resetBtn').addEventListener('click', resetQuiz);
+    document.getElementById('restartFromResultBtn').addEventListener('click', resetQuiz);
+
+    renderQuestion(0);
+</script>
+</body>
+</html>
