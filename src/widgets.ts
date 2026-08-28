@@ -357,7 +357,9 @@ function quiz(el: HTMLElement): void {
   let locked = false;
 
   const paint = (): void => {
-    const box = el.querySelector("[data-quiz]");
+    const box = el.matches("[data-quiz]")
+      ? el
+      : el.querySelector("[data-quiz]");
     if (!box) return;
     if (i >= QUESTIONS.length) {
       const pct = Math.round((score / QUESTIONS.length) * 100);
