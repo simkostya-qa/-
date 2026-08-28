@@ -24,6 +24,12 @@ export class Deck {
     this.show(this.index);
     this.fit();
     window.addEventListener("resize", () => this.fit());
+    window.addEventListener("hashchange", () => {
+      const hash = Number(location.hash.replace("#", ""));
+      if (!Number.isFinite(hash) || hash < 1 || hash > this.slides.length) return;
+      if (hash - 1 === this.index) return;
+      this.show(hash - 1);
+    });
   }
 
   private renderShell(): void {
@@ -110,11 +116,17 @@ export class Deck {
   }
 
   private fit(): void {
+    const viewport = this.app.querySelector<HTMLElement>(".viewport");
     const wrap = this.app.querySelector<HTMLElement>(".stage-wrap");
     const stage = this.app.querySelector<HTMLElement>(".stage");
-    if (!wrap || !stage) return;
-    const scale = Math.min(wrap.clientWidth / 1280, wrap.clientHeight / 720);
+    if (!viewport || !wrap || !stage) return;
+    wrap.style.width = "100%";
+    wrap.style.height = "100%";
+    const maxW = Math.max(320, viewport.clientWidth);
+    const maxH = Math.max(180, viewport.clientHeight);
+    const scale = Math.min(maxW / 1280, maxH / 720, 1);
     stage.style.transform = `scale(${scale})`;
+    wrap.style.width = `${1280 * scale}px`;
     wrap.style.height = `${720 * scale}px`;
   }
 
